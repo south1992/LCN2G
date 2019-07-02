@@ -1,0 +1,899 @@
+---
+title: "New view"
+author: "xxn"
+date: "2019å¹?5æœ?8æ—?"
+output: html_document
+---
+
+```{r}
+load("data.RData")
+load("Preprocess.RData")
+```
+
+```{r}
+  gene_data = data$gene_data
+  gene_info = data$gene_info
+  diet_data = data$diet_data
+  diet_info = data$diet_info
+  MacroNutrition = data$MacroNutrition
+  
+  gene_data = na.omit(gene_data)
+  hasannot <- rowSums(is.na(gene_info)) == 0
+  gene_data = gene_data[hasannot,]
+  diet_data = na.omit(diet_data)
+  MacroNutrition = na.omit(MacroNutrition)
+  gene_cpm = cpm(gene_data)
+  A = rowSums(gene_cpm)
+  gene_cpm = gene_cpm[A>0,]
+  gene_data = gene_data[A>0,]
+  A = A[A>0]
+  B = apply(gene_cpm,1,sd)
+  
+  gene_cpm = gene_cpm[A>mcpm&B>mvar&A<maxcpm,]
+  gene_data = gene_data[A>mcpm&B>mvar&A<maxcpm,]
+  
+  gene_cpm = log2(gene_cpm)
+```
+
+```{r}
+psudo_freq = function(x,y,c = median(y)){
+  x_ind = order(x)
+  y = y[x_ind]
+  y_freq = sum(0.5*abs(diff(sign(y - c))))
+  return(y_freq)
+}
+```
+
+```{r}
+x = 1:22
+r = replicate(n = 10000,psudo_freq(x,sample(x,replace = F)))
+h = table(r)/10000
+```
+
+
+```{r}
+#threshold for p<0.05,n = 22, cutoff 15
+A = matrix(0,ncol = ncol(MacroNutrition),nrow = nrow(gene_cpm))
+for (j in 1:ncol(MacroNutrition)){
+  for(i in 1:nrow(gene_cpm)){
+    A[i,j] = psudo_freq(x = MacroNutrition[,j],y = gene_cpm[i,])
+  }
+}
+rownames(A) = rownames(gene_cpm)
+colnames(A) = colnames(MacroNutrition)
+    
+```
+
+```{r}
+lc = function(D,M,Z){
+  
+  D = as.matrix(D)
+  
+  D_z  = matrix(0,ncol = length(Z),nrow = length(Z))
+  for (i in 1:length(Z)){
+    for (j in 1:length(Z)){
+      D_z[i,j] = Z[i] - Z[j]
+    }
+  }
+  
+  D_M = matrix(0,nrow = nrow(D),ncol = nrow(D))
+  
+  for (i in 1:(nrow(D) - 1))
+  {
+    D_M[i,i] = 0
+    for(j in (i + 1):nrow(D)){
+      q = as.matrix(D[i,] - D[j,])
+      D_M[i,j] = exp(-t(q) %*% M %*% q)
+      D_M[j,i] = D_M[i,j]
+    }
+  }
+  
+  R = tr(D_M%*%abs(D_z))
+  return(R)
+}
+```
+
+```{r}
+LC = c()
+for (i in 1:length(test)){
+  Z1 = scale(gene_cpm[rownames(test)[i],])
+  LC[i] = lc(D,M,Z1)
+}
+#test = cbind(test,LC)
+```
+
+```{r}
+res = c()
+for(i in 1:100){
+  Z2 = sample(Z1,replace = F)
+  res[i] = lc(D,M,Z2)
+}
+```
+
+```{r}
+#clust_dist0 = hybClust(data,"m1","m1",1,"m2")
+#res0 = cutreeDynamicTree(hclust(as.dist(clust_dist0)))
+clust_dist0 = hybClust(data,"m0","m1",0,"m2")
+res0 = cutree(hclust(as.dist(clust_dist0)),k = 10)
+ARI = c()
+ARI1 = c()
+i = 0
+for (alpha in seq(0,1,0.01)){
+  i = i+ 1
+  clust_dist2 = hybClust(data,"m0","m1",alpha,"m2")
+  res1 = cutree(hclust(as.dist(clust_dist2)),k = 10)
+  ARI[i] = adjustedRandIndex(res0,res1)
+#  res0 = res1
+}
+plot(seq(0,1,0.01),ARI)
+```
+
+```{r}
+D = data.frame(x1 = x1,x2 = x2, x3 = abs(x1),x4 = x1 + x2, x5 = x1*x2)
+
+for (i in 1:20){
+  D = cbind(D,sample(x1,replace = F),sample(x2,replace = F))
+}
+
+```
+
+```{r}
+p1 = Visual_contour(x1,x2,z) + scale_fill_gradientn(colours = terrain.colors(10)) +  theme_classic() + labs(title = "Simulated model with true xy-axis",x = "x",y = "y") + annotate(geom = "text",x = 1.5,y = 2.5,label = "LC = 38.52")
+p2 = Visual_contour(sample(x1,replace = F),sample(x2,replace = F),z) + scale_fill_gradientn(colours = terrain.colors(10)) +  theme_classic() + labs(title = "Simulated model with randomly permutated xy-axis") + annotate(geom = "text",x = 1.5,y = 2.5,label = "LC = 49.48")
+multiplot(p1,p2,cols = 2)
+```
+
+```{r}
+D1 = data.frame(x = seq(0,1,0.01),y1 = ARI1,Ref = "alpha = 0")
+D2 = data.frame(x = seq(0,1,0.01),y1 = ARI,Ref = "alpha = 1")
+D = rbind(D1,D2)
+ggplot(D) + geom_line(aes(x = x,y = y1,color = Ref)) + theme_classic() + labs(x = "alpha",y = "ARI",title = "ARI vs. hybrid parameter(alpha)")
+```
+
+
+```{r}
+load("Clust_data.RData")
+clust_dist = as.matrix(clust_data$clust_dist)
+a = sort(clust_dist["CD109",])
+which(names(a) == "VSIG4")
+```
+
+```{r}
+
+x = rnorm(seq(0,2,length.out = 100))
+y1 = exp(-x^2) + 0.1*rnorm(length(x))
+lc1 = lc(x,1,y1)
+y2 = sample(y1,replace = F)
+lc2 = lc(x,1,y2)
+D1 = data.frame(x = x,y = y1)
+D2 = data.frame(x = x,y = y2)
+p1 = ggplot(D1) + geom_point(aes(x = x,y = y), color = "blue") + theme_classic() + annotate(geom = "text",x = 1.8,y = 1.25, label = paste0("LC=",round(lc1,2))) + labs(title = "informative visualization")
+p2 = ggplot(D2) + geom_point(aes(x = x,y = y), color = "red") + theme_classic()+ annotate(geom = "text",x = 1.8,y = 1.25, label = paste0("LC=",round(lc2,2)))+ labs(title = "non-informative visualization")
+multiplot(p1,p2,cols = 2)
+
+lc.perm = c()
+for (i in 1:1000){
+  y3 = sample(y1,replace = F)
+  lc.perm[i] = lc(x,1,y3)
+}
+ggplot(as.data.frame(lc.perm)) + geom_histogram(aes(x = lc.perm,y = ..density..),bins = 50,color = "black",fill = "white") + theme_classic() + geom_vline(aes(xintercept = lc1),color = "blue",linetype = "dashed") + geom_vline(aes(xintercept = lc2),color = "red",linetype = "dashed") + labs(x = "LC",y = "Density")
+```
+
+```{r}
+res = list()
+TEST = matrix(0,nrow = 10,ncol = choose(10,2))
+for(i in 1:10){
+  x1 = rnorm(20)
+  x2 = rnorm(20)
+  x3 = rnorm(20)
+  x9 = rnorm(20)
+  x10 = abs(x1)/(abs(x1)+abs(x2))
+  z = exp(-(x1^2+x10^2)) + 0.2*rnorm(20)
+  z = scale(z)
+  D = data.frame(x1 = x1,x2 = x2,x3 = rnorm(20),x4 = rnorm(20),x5 = rnorm(20),x6 = rnorm(20),x7 = rnorm(20),x8 = rnorm(20),x9 = x9,x10 = x10)
+  D = scale(D)
+
+res[[i]] = lc_exhaust(D,z,k = 2,type = 1)
+TEST[i,] = res[[i]]$lc
+}
+
+```
+
+```{r}
+mu = apply(TEST,2,mean)
+sgm = apply(TEST,2,sd)
+t = order(mu)
+name = c()
+for (i in 1:length(t))
+{
+  name[i] = paste(res[[1]]$searchspace[,t[i]],collapse = ",")
+}
+name = factor(name,levels = name)
+Data = data.frame(name = name,mu = mu[t],sgm = sgm[t])
+Data = Data[1:10,]
+ggplot(Data) + geom_bar(aes(x = name,y = mu), stat="identity", fill="skyblue", alpha=0.7) + geom_errorbar(aes(x=name, ymin=mu-sgm, ymax=mu+sgm), width=0.4, colour="orange", alpha=0.9, size=1.3) + labs(x = "top 10 minimal LC variables", y = "LC", title = "top 10 minimal LC variables for model 2")
+```
+
+
+
+```{r 2019529}
+
+D1 = readxl::read_xlsx("GeneData_GFstudy_mice_2019May28.xlsx",sheet = 1,col_names = T,skip = 1)
+
+D2 = read.csv("hypothalamus_mircoarray_GFmice.csv")
+D3 = read.csv("liver_microarray_transposed_Part_1.csv")
+D4 = read.csv("Liver_microarray_transposed_Part_2.csv")
+```
+
+```{r}
+D3 = cbind(D3, D4[,-1])
+samplename = D3$Sample.ID
+ind1 = match(D1$`Sample ID`,samplename)
+
+D2= D2[-24,]
+samplename2 = D2$Sample.ID
+ind2 = match(D1$`Sample ID`,samplename2)
+
+SFA = rowSums(D1[,19:39])- D1$`C16:1` - D1$`C18:2` - D1$`C18:1 (cis?)` - D1$`C18:3` - D1$`C20:4` - D1$`C22:1`
+D1$SFA = SFA
+
+D1.full = na.omit(D1)
+
+
+
+D1.exc = D1[,-(19:39)]
+D1.exc = na.omit(D1.exc)
+
+
+
+N0 = c("P in diet (kJ/kg D.wt)","C in diet (kJ/kg D.wt)","F in diet (kJ/kg D.wt)","Cellulose in diet (g/g)","Dry weight food eaten g/mouse/cage/d","Cellulose intake (g/d)","P eaten (kJ/mse/cage/d)","C eaten (kJ/mse/cage/d)","F eaten (kJ/mse/cage/d)","Energy intake (kJ/mse/cage/d)","C9:0","C10:0","C11:0","C12:0","C13:0","C14:0","C15:0","C16:1","C16:0","C17:0","C18:2","C18:1 (cis?)","C18:3","C18:1 (trans?)","C18:0","C19:0","C20:4","C20:0","C21:0","C22:1","C22:0")
+
+N1 = c("P in diet (kJ/kg D.wt)","C in diet (kJ/kg D.wt)","F in diet (kJ/kg D.wt)","Cellulose in diet (g/g)","Dry weight food eaten g/mouse/cage/d","Cellulose intake (g/d)","P eaten (kJ/mse/cage/d)","C eaten (kJ/mse/cage/d)","F eaten (kJ/mse/cage/d)","Energy intake (kJ/mse/cage/d)","SFA")
+
+re_N1 = c("P in diet","C in diet","F in diet","Cellulose in diet","Dry weight food eaten","Cellulose intake","P eaten","C eaten","F eaten","Energy intake","SFA")
+
+N2 = c("Dry weight food eaten g/mouse/cage/d","Cellulose intake (g/d)","P eaten (kJ/mse/cage/d)","C eaten (kJ/mse/cage/d)","F eaten (kJ/mse/cage/d)","Energy intake (kJ/mse/cage/d)")
+
+re_N2 = c("Dry weight food eaten","Cellulose intake","P eaten","C eaten","F eaten","Energy intake")
+
+D11.corrspond = D1[!is.na(ind1),]
+D11.corrspond = D11.corrspond[,N1]
+colnames(D11.corrspond) = re_N1
+D11.corrspond = cbind(D11.corrspond,D3)
+D11.corrspond = na.omit(D11.corrspond)
+
+D31 = D11.corrspond[,(length(N1)+1):ncol(D11.corrspond)]
+D11.corrspond = D11.corrspond[,1:length(N1)]
+
+
+
+D12.corrspond = D1[!is.na(ind2),]
+D12.corrspond = D12.corrspond[,N1]
+colnames(D12.corrspond) = re_N1
+D12.corrspond = cbind(D12.corrspond,D2)
+
+D12.corrspond = na.omit(D12.corrspond)
+
+D21 = D12.corrspond[,(length(N1)+1):ncol(D12.corrspond)]
+D12.corrspond = D12.corrspond[,1:length(N1)]
+
+
+
+D = D1.exc[,N1]
+
+colnames(D) = re_N1
+
+Z = D1.exc$`FC FGF21`
+
+
+```
+
+```{r}
+D = scale(D)
+Z = scale(Z)
+res = lc_exhaust(D,Z, k = 2,type =1)
+```
+
+```{r}
+res_test = c()
+res_name = c()
+for(i in 1:ncol(res$searchspace)){
+  res_name[i] = paste(res$searchspace[1,i],res$searchspace[2,i],sep = ",")
+  res_test[i] = lc_test(D = data.frame(x = D[,res$searchspace[1,i]],y = D[,res$searchspace[2,i]]),M = diag(2),Z = Z,n = 200)
+}
+```
+
+```{r}
+res_test = c()
+res_name = c()
+for(i in 1:ncol(res$searchspace)){
+  res_name[i] = paste(res$searchspace[1,i],res$searchspace[2,i],sep = ",")
+  res_test[i] = lc_test(D = data.frame(x = D[,res$searchspace[1,i]],y = D[,res$searchspace[2,i]]),M = diag(2),Z = Z,n = 200)
+}
+```
+
+```{r}
+tab = bl(n = nrow(D),k = 2,q = 1000)
+res_test1 = c()
+
+for (i in 1:ncol(res$searchspace))
+{
+  res_test1[i] = lc(D = data.frame(x = D[,res$searchspace[1,i]],y = D[,res$searchspace[2,i]]),M = diag(2),Z = Z)
+  res_test1[i] = sum(tab<res_test1[i])/1000
+}
+```
+
+
+
+```{r}
+p1 = Visual_contour(x = D[,res$searchspace[1,1]],y = D[,res$searchspace[2,1]],z = Z)
+
+Z1 = D3$Fgf21
+
+#p1 = Visual_contour(x = D1.exc$`P eaten (kJ/mse/cage/d)`,y = D1.exc$`C eaten (kJ/mse/cage/d)`,z = Z)
+
+p2 = Visual_contour(x = D[,res$searchspace[1,11]],y = D[,res$searchspace[2,11]],z = Z)
+
+p1 = p1 + scale_fill_gradientn(colours = jet.colors(256)) + labs(x = res$searchspace[1,1],y = res$searchspace[2,1],title = "Fold Change of FGF21 vs. Protein and Carb in diet",fill = "Fold Change FGF21") + theme_classic()
+
+p2 = p2 + scale_fill_gradientn(colours = jet.colors(256)) + labs(x = res$searchspace[1,11],y = res$searchspace[2,11],title = "Fold Change of FGF21 vs. Fat eaten and Energy intake",fill = "Fold Change FGF21") + theme_classic()
+
+p1
+p2
+```
+
+```{r}
+lc_test(D = data.frame(x = D[,res$searchspace[1,45]],y = D[,res$searchspace[2,45]]),M = diag(2),Z= Z)
+```
+```{r}
+temp_lc = c()
+for (i in 1:1000){
+  Z_perm = sample(Z,replace = F)
+  temp_lc[i] = lc(D = data.frame(x = D[,res$searchspace[1,1]],y = D[,res$searchspace[2,1]]),M = diag(2),Z = Z_perm)
+}
+lc1 = lc(D = data.frame(x = D[,res$searchspace[1,1]],y = D[,res$searchspace[2,1]]),M = diag(2),Z = Z)
+ggplot(as.data.frame(temp_lc)) + geom_histogram(aes(x = temp_lc,y = ..density..),bins = 50,color = "black",fill = "white") + theme_classic() + geom_vline(aes(xintercept = lc1),color = "red",linetype = "dashed") + labs(x = "LC",y = "Density",title = "LC-test for Protein and Carb in diet")
+```
+
+```{r}
+
+```
+
+```{r}
+plot(D1.corrspond$`P eaten (kJ/mse/cage/d)`,D3$Fgf21)
+```
+
+```{r}
+searchspace = res$searchspace
+name = c()
+for (i in 1:ncol(searchspace)){
+  
+  name[i] = paste0(searchspace[,i],collapse = ",")
+
+}
+D_temp = data.frame(name = factor(name,levels = name),LC = res$lc)
+D_temp = D_temp[1:20,]
+D_temp = D_temp[order(D_temp$LC,decreasing = T),]
+D_temp$name = factor(D_temp$name,levels = D_temp$name)
+ggplot(data = D_temp)+ geom_bar(aes(x = name,y = LC), stat="identity", fill="skyblue", alpha=0.7)  + coord_flip() + labs(x = "LC value",y = "",title = "LC for top 20 smallest combination of nutrients") + theme_classic()
+```
+
+```{r}
+p_lc = c()
+for (i in 1:20){
+  p_lc[i] = lc_test(D = D[,res$searchspace[,i]],M = diag(2),Z = Z)
+}
+```
+
+```{r simulated}
+
+simu = function(p,n,r,simutype = 1,k = 2,q = 50){
+#p = 9
+#n = 100
+#r = 0.1
+
+res = list()
+TEST = matrix(0,nrow = q,ncol = choose(p+1,k))
+
+for(i in 1:q){
+  D = matrix(0,nrow = n,ncol = p)
+  for(j in 1:p){
+    D[,j] = rnorm(n)
+  }
+  colnames(D) = c(paste(rep("x",ncol(D)),seq(1,ncol(D),1),sep=""))
+  D = as.data.frame(D)
+#  D[,paste0("x",p+1)] = abs(D$x1)/(abs(D$x1)+abs(D$x2)) + 0.1*rnorm(n)
+  D[,p+1] = abs(D[,1])/(abs(D[,1])+abs(D[,2])) + 0.1*rnorm(n)
+  colnames(D)[p+1] = paste0("x",p+1)
+  D = scale(D)
+  if (simutype == 1){
+    z = exp(-(D[,1]^2+D[,p+1]^2)) + r*rnorm(n)
+  }else if(simutype == 2){
+    z = sin(pi/2*(D[,1]^2+D[,p+1]^2)) + r*rnorm(n)
+  }else if(simutype == 3){
+    z = exp(-(D[,1]^2+ abs(D[,3]))/5) + exp(-D[,p+1]^2/5) + r*rnorm(n)
+  }
+  z = scale(z)
+  res[[i]] = lc_exhaust(D,z,k=k,type = 1,isorder = F)
+  TEST[i,] = res[[i]]$lc
+}
+#  TEST = -log2(TEST/n^2)
+#  S = matrix(0,nrow = ncol(TEST),ncol = 2)
+#  S[,1] = apply(TEST,2,mean)
+#  S[,2] = apply(TEST,2,sd)
+#  colnames(S) = c("mean","sd")
+
+#  name = c()
+#  searchspace = res[[1]]$searchspace
+#  for (i in 1:ncol(searchspace)){
+#    name[i] = paste0(searchspace[,i],collapse = ",")
+#  }
+#  rownames(S) = name
+  return(TEST)
+}
+
+
+```
+
+
+```{r}
+R = list()
+R$`model1 (100,9,0.1)` = simu(p = 9,n = 100,r = 0.1,simutype = 1)
+R$`model1 (50,9,0.1)` = simu(p = 9,n = 50,r = 0.1,simutype = 1)
+R$`model1 (20,9,0.1)` = simu(p = 9,n = 20,r = 0.1,simutype = 1)
+R$`model1 (100,19,0.1)` = simu(p = 19,n = 100,r = 0.1,simutype = 1)
+R$`model1 (50,19,0.1)` = simu(p = 19,n = 50,r = 0.1,simutype = 1)
+R$`model1 (20,19,0.1)` = simu(p = 19,n = 20,r = 0.1,simutype = 1)
+
+R$`model2 (100,9,0.1)` = simu(p = 9,n = 100,r = 0.1,simutype = 2)
+R$`model2 (50,9,0.1)` = simu(p = 9,n = 50,r = 0.1,simutype = 2)
+R$`model2 (20,9,0.1)` = simu(p = 9,n = 20,r = 0.1,simutype = 2)
+R$`model2 (100,19,0.1)` = simu(p = 19,n = 100,r = 0.1,simutype = 2)
+R$`model2 (50,19,0.1)` = simu(p = 19,n = 50,r = 0.1,simutype = 2)
+R$`model2 (20,19,0.1)` = simu(p = 19,n = 20,r = 0.1,simutype = 2)
+
+R$`model3 (100,9,0.1)` = simu(p = 9,n = 100,r = 0.1,simutype = 3,k = 3)
+R$`model3 (50,9,0.1)` = simu(p = 9,n = 50,r = 0.1,simutype = 3,k = 3)
+R$`model3 (20,9,0.1)` = simu(p = 9,n = 20,r = 0.1,simutype = 3,k = 3)
+R$`model3 (100,19,0.1)` = simu(p = 19,n = 100,r = 0.1,simutype = 3,k = 3)
+R$`model3 (50,19,0.1)` = simu(p = 19,n = 50,r = 0.1,simutype = 3,k = 3)
+R$`model3 (20,19,0.1)` = simu(p = 19,n = 20,r = 0.1,simutype = 3,k = 3)
+
+R$`model4 (100,9,0.1)` = simu(p = 9,n = 100,r = 0.1,simutype = 3,k = 2)
+R$`model4 (50,9,0.1)` = simu(p = 9,n = 50,r = 0.1,simutype = 3,k = 2)
+R$`model4 (20,9,0.1)` = simu(p = 9,n = 20,r = 0.1,simutype = 3,k = 2)
+R$`model4 (100,19,0.1)` = simu(p = 19,n = 100,r = 0.1,simutype = 3,k = 2)
+R$`model4 (50,19,0.1)` = simu(p = 19,n = 50,r = 0.1,simutype = 3,k = 2)
+R$`model4 (20,19,0.1)` = simu(p = 19,n = 20,r = 0.1,simutype = 3,k = 2)
+```
+
+```{r}
+simu_p = list()
+for(k in 1:length(R)){
+  Temp = as.data.frame(R[[k]])
+  Temp = Temp[order(Temp[,1],decreasing = F),]
+  Temp$name = factor(rownames(Temp),levels = rownames(Temp))
+  Temp1 = Temp[1:20,]
+  simulation = ggplot(Temp1) + geom_bar(aes(x = name,y = mean), stat="identity", fill="skyblue", alpha=0.7) + geom_errorbar(aes(x=name, ymin=mean-sd, ymax=mean+sd),width=0.4, colour="orange", alpha=0.9, size=1.3) + labs(x = "",y = "") +  theme_classic() + theme(axis.text.x = element_text(angle = 45,hjust = 1))
+ 
+  simu_p[[k]] = simulation
+}
+```
+
+```{r}
+n_list = c("n=100","n=50","n=20","n=100","n=50","n=20")
+p_list = c("p=9","p=9","p=9","p=19","p=19","p=19")
+Fig2_1 = data.frame(mean = 0,sd = 0,name = "",n = "n=0",p = "p=0")
+for (k in 1:6){
+  Temp = as.data.frame(R[[k]])
+  Temp = Temp[order(Temp[,1],decreasing = F),]
+  Temp$name = factor(rownames(Temp),levels = rownames(Temp))
+  Temp1 = Temp[1:20,]
+  
+  Temp1$n = n_list[k]
+  Temp1$p = p_list[k]
+  Fig2_1 = rbind(Fig2_1,Temp1)
+}
+
+Fig2_1 = Fig2_1[-1,]
+
+```
+
+```{r lctest}
+
+simu_test0 = function(n,p,r,tab,simutype = 2,k = 2,istab = T){
+
+res = list()
+
+D = matrix(0,nrow = n,ncol = p)
+for(j in 1:p){
+  D[,j] = rnorm(n)
+}
+
+colnames(D) = c(paste(rep("x",ncol(D)),seq(1,ncol(D),1),sep=""))
+
+D = as.data.frame(D)
+#  D[,paste0("x",p+1)] = abs(D$x1)/(abs(D$x1)+abs(D$x2)) + 0.1*rnorm(n)
+D[,p+1] = abs(D[,1])/(abs(D[,1])+abs(D[,2])) + 0.1*rnorm(n)
+
+colnames(D)[p+1] = paste0("x",p+1)
+
+D = scale(D)
+
+if (simutype == 1){
+  z = exp(-(D[,1]^2+D[,p+1]^2)) + r*rnorm(n)
+}else if(simutype == 2){
+  z = sin(pi/2*(D[,1]^2+D[,p+1]^2)) + r*rnorm(n)
+}else if(simutype == 3){
+  z = exp(-(D[,1]^2+ abs(D[,3]))/5) + exp(-D[,p+1]^2/5) + r*rnorm(n)
+}else{
+   z = rnorm(n)
+}
+
+z = scale(z)
+
+if(k == 2){
+  D1 = D[,c(1,p+1)]
+  D2 = D[,-c(1,p+1)]
+  D2 = D[,sample(ncol(D2),2,replace = F)]
+}else{
+  D1 = D[,c(1,3,p+1)]
+  D2 = D[,-c(1,3,p+1)]
+  D2 = D[,sample(ncol(D2),3,replace = F)]
+}
+
+if(istab){
+  p_lc1 = lc(D1,diag(k),z)
+  p_lc2 = lc(D2,diag(k),z)
+  p_lc1 = sum(tab<p_lc1)/length(tab)
+  p_lc2 = sum(tab<p_lc2)/length(tab)
+}else{
+  p_lc1 = lc_test(D1,diag(k),z,n = 1000)
+  p_lc2 = lc_test(D2,diag(k),z,n = 1000)
+  print(p_lc2)
+}
+p_lm1 = lmp(lm(z~D1))
+p_lm2 = lmp(lm(z~D2))
+if (k == 2){
+  p_lmi1 = lmp(lm(z~D1[,1]*D1[,2]))
+  p_lmi2 = lmp(lm(z~D2[,1]*D2[,2]))
+}else{
+  p_lmi1 = lmp(lm(z~D1[,1]*D1[,2]*D1[,3]))
+  p_lmi2 = lmp(lm(z~D2[,1]*D2[,2]*D2[,3]))
+}
+
+p = data.frame(p_lc1 = p_lc1,p_lm1 = p_lm1,p_lmi1 = p_lmi1,p_lc2 = p_lc2,p_lm2 = p_lm2,p_lmi2 = p_lmi2)
+return(p)
+}
+```
+
+```{r}
+simu_test = function(n,p,k,r,q = 100,type = 2){
+  if (n ==20){
+    p1 = simu_test0(n,p,r,tab = NULL,simutype = type,istab = F,k = k)
+  }else{
+    tab = bl(n,k)
+    p1 = simu_test0(n,p,r,tab,simutype = type,k = k)
+  }
+  
+  for (i in 1:(q-1)){
+    if (n ==20){
+    p1 = rbind(p1,simu_test0(n,p,r,tab = NULL,simutype = type,istab = F,k=k))
+  }else{
+    p1 = rbind(p1,simu_test0(n,p,r,tab,simutype = type,k = k))
+  }
+  }
+  return(p1)
+}
+
+p = simu_test(20,9,2,0.1,type = 2)
+```
+
+```{r}
+sum(p$p_lc1<0.05)/100
+sum(p$p_lc2<0.05)/100
+sum(p$p_lm1<0.05)/100
+sum(p$p_lm2<0.05)/100
+sum(p$p_lmi1<0.05)/100
+sum(p$p_lmi2<0.05)/100
+```
+
+
+#baseline
+```{r}
+q = 1000
+bl_100.2 = c()
+for (i in 1:q){
+  X = rnorm(100)
+  Y = rnorm(100)
+  Z = rnorm(100)
+  bl_100.2[i] = lc(D = scale(data.frame(x = X,y = Y)),M = diag(2),Z = scale(Z))
+}
+
+ggplot(data.frame(x = bl_100.2)) + geom_histogram(aes(x = x,y = ..density..),bins = 50,color = "black",fill = "white") + theme_classic()  + labs(x = "LC",y = "Density") +  geom_vline(aes(xintercept = a[1]),color = "red",linetype = "dashed") + geom_vline(aes(xintercept = mean(b[,1])),color = "blue",linetype = "dashed") + geom_vline(aes(xintercept = mean(c[,1])),color = "green",linetype = "dashed")
+```
+```{r}
+bl100.2 = bl(100,2)
+
+```
+
+
+```{r}
+sep2 = function(D,p){
+  name0 = combn((p+1),2)
+  name1 = c()
+  for(i in 1:ncol(name0)){
+    name1[i] = paste(name0[1,i],name0[2,i],sep = ",")
+  }
+  group1 = D[,which(name1 == paste(1,p+1,sep = ","))]
+  group1 = melt(group1)
+  group1 = data.frame(value = group1$value,type = "true variable")
+  set1 = union(grep("1,",name1),grep(p+1,name1))
+  set2 = intersect(grep("1,",name1),grep(p+1,name1))
+  group2 = D[,setdiff(set1,set2)]
+  group2 = melt(group2)
+  group2 = data.frame(value = group2$value,type = "contain only one true variable")
+  group3 = D[,-set1]
+  group3 = melt(group3)
+  group3 = data.frame(value = group3$value,type = "do not contain true variable")
+  group = rbind(group1,group2,group3)
+  return(group)
+}
+
+```
+
+```{r}
+sep3 = function(D,p,k = 3){
+  name0 = combn((p+1),k)
+  name1 = c()
+  
+  if (k == 3){
+  for(i in 1:ncol(name0)){
+    name1[i] = paste(name0[1,i],name0[2,i],name0[3,i],sep = ",")
+  }
+  group1 = D[,which(name1 == paste(1,3,p+1,sep = ","))]
+  group1 = melt(group1)
+  group1 = data.frame(value = group1$value,type = "true variable")
+  set1 = union(grep("1,",name1),union(grep(3,name1),grep(p+1,name1)))
+  set2 = union(intersect(grep("1,",name1),grep("3",name1)),union(intersect(grep("1,",name1),grep(p+1,name1)),intersect(grep("3,",name1),grep(p+1,name1))))
+  set3 = intersect(grep("1,",name1),intersect(grep(3,name1),grep(p+1,name1)))
+  group2 = D[,setdiff(set1,set2)]
+  group2 = melt(group2)
+  group2 = data.frame(value = group2$value,type = "contain only one true variable")
+  
+  group3 = D[,setdiff(set2,set3)]
+  group3 = melt(group3)
+  group3 = data.frame(value = group3$value,type = "contain only two true variable")
+  
+  group4 = D[,-set1]
+  group4 = melt(group4)
+  group4 = data.frame(value = group4$value,type = "do not contain true variable")
+  group = rbind(group1,group3,group2,group4)
+  }else{
+    for(i in 1:ncol(name0)){
+    name1[i] = paste(name0[1,i],name0[2,i],sep = ",")
+  }
+    set1 = union(grep("1,",name1),union(grep(3,name1),grep(p+1,name1)))
+  set2 = union(intersect(grep("1,",name1),grep("3",name1)),union(intersect(grep("1,",name1),grep(p+1,name1)),intersect(grep("3,",name1),grep(p+1,name1))))
+# set3 = intersect(grep("1,",name1),intersect(grep(3,name1),grep(p+1,name1)))
+  group2 = D[,setdiff(set1,set2)]
+  group2 = melt(group2)
+  group2 = data.frame(value = group2$value,type = "contain only one true variable")
+  
+  group3 = D[,set2]
+  group3 = melt(group3)
+  group3 = data.frame(value = group3$value,type = "contain only two true variable")
+  
+  group4 = D[,-set1]
+  group4 = melt(group4)
+  group4 = data.frame(value = group4$value,type = "do not contain true variable")
+  group = rbind(group3,group2,group4)
+  }
+  
+  return(group)
+}
+
+```
+
+```{r}
+group_100.9 = sep3(R$`model3 (100,9,0.1)`,p = 9)
+group_100.9$n = "n=100"
+group_100.9$p = "p=9"
+
+group_50.9 = sep3(R$`model4 (50,9,0.1)`,p = 9,k = 2)
+group_50.9$n = "n=50"
+group_50.9$p = "p=9"
+
+group_20.9 = sep3(R$`model4 (20,9,0.1)`,p = 9,k = 2)
+group_20.9$n = "n=20"
+group_20.9$p = "p=9"
+
+group_100.19 = sep3(R$`model4 (100,19,0.1)`,p = 19,k = 2)
+group_100.19$n = "n=100"
+group_100.19$p = "p=19"
+
+group_50.19 = sep3(R$`model4 (50,19,0.1)`,p = 19,k = 2)
+group_50.19$n = "n=50"
+group_50.19$p = "p=19"
+
+group_20.19 = sep3(R$`model4 (20,19,0.1)`,p = 19,k = 2)
+group_20.19$n = "n=100"
+group_20.19$p = "p=19"
+
+group = rbind(group_100.9,group_50.9,group_20.9,group_100.19,group_50.19,group_20.19)
+p = ggplot(group_100.9) + geom_boxplot(aes(x = type,y = value,fill = type)) + scale_fill_brewer(palette="Dark2") + theme( axis.text.x = element_blank(), panel.background = element_rect(fill = "white", colour = "white",size = 0.5, linetype = "solid"),axis.line = element_line(color = "black")) + labs(x = "", y = "")
+p
+```
+
+```{r}
+lmp <- function (modelobject) {
+    if (class(modelobject) != "lm") stop("Not an object of class 'lm' ")
+    f <- summary(modelobject)$fstatistic
+    p <- pf(f[1],f[2],f[3],lower.tail=F)
+    attributes(p) <- NULL
+    return(p)
+}
+```
+
+
+```{r}
+x = rnorm(100)
+y = rnorm(100)
+z = exp(-(x^2+y^2))+0.1*rnorm(100)
+lc1 = lc(D = data.frame(x= x,y = y),M = diag(2),Z= z)
+p_illu = Visual_contour(x ,y ,z = z)
+p_illu = p_illu  + scale_fill_gradientn(colours = jet.colors(256)) + labs(x = "true covariates x",y = "true covariates y",title = "Response z with respect to true covariates",fill = "z") + theme_classic()+ annotate(geom ="text",label =  paste0("LC = ",round(lc1,digits = 2)),x = 2,y = 2.4)
+
+x = rnorm(100)
+y = rnorm(100)
+x1 = rnorm(100)
+x2 = rnorm(100)
+z = exp(-(x^2+y^2))+0.1*rnorm(100)
+lc2 = lc(D = data.frame(x= x1,y = x2),M = diag(2),Z= z)
+p_illu2 = Visual_contour(x1 ,x2 ,z = z)
+p_illu2 = p_illu2  + scale_fill_gradientn(colours = jet.colors(256)) + labs(x = "randomly selected x",y = "randomly selected y",title = "Response z with respect to randomly selected covariates",fill = "z") + theme_classic()+ annotate(geom ="text",label =  paste0("LC = ",round(lc2,digits = 2)),x = 2,y = 2.4)
+```
+
+```{r}
+D3 = D3[,-1]
+
+baseline = bl(n = nrow(D3),k = 2,q = 5000)
+p_value1 = c()
+p_value2 = c()
+p_value3 = c()
+for (i in 1:ncol(D31.correspond)){
+  obs1 = lc(D=scale(D11.corrspond[,c(8,9)]),M = diag(2),Z = scale(D31.correspond[,i]))
+  p_value1[i] = sum(baseline<obs1)/5000
+  obs2 = lc(D=scale(D11.corrspond[,c(2,3)]),M = diag(2),Z = scale(D31.correspond[,i]))
+  p_value2[i] = sum(baseline<obs2)/5000
+  obs3 = lc(D=scale(D11.corrspond[,c(7,12)]),M = diag(2),Z = scale(D31.correspond[,i]))
+  p_value3[i] = sum(baseline<obs3)/5000
+}
+```
+
+```{r}
+names(p_value1) = colnames(D31.correspond)
+names(p_value2) = colnames(D31.correspond)
+names(p_value3) = colnames(D31.correspond)
+```
+
+```{r}
+p_value1 = sort(p_value1,decreasing = T)
+p_value2 = sort(p_value2,decreasing = T)
+p_value3 = sort(p_value3,decreasing = F)
+```
+
+```{r}
+ind31 = match(D31$Sample.ID, D1$`Sample ID`)
+D11.corrspond$`Energy density` = tolower(D1$`Energy density`[ind31])
+res.aov = c()
+for(i in 1:ncol(D31)){
+  res.aov[i] = summary(aov(D31[,i]~factor(D11.corrspond$`Energy density`)))[[1]]$`Pr(>F)`[1]
+}
+ind.gene = which(res.aov<0.05)
+D31.correspond = D31[,ind.gene]
+
+```
+
+```{r}
+powers <- c(c(1:10), seq(from = 12, to=20, by=2))
+sft <- pickSoftThreshold(D31.correspond, powerVector = powers)
+```
+
+```{r}
+par(mfrow = c(1, 2))
+plot(sft$fitIndices[, 1], -sign(sft$fitIndices[, 3]) * sft$fitIndices[, 2],
+     xlab = "Soft Threshold (power)", ylab = "SFT, signed R^2", type = "n", main = paste("Scale independence"))
+text(sft$fitIndices[, 1], -sign(sft$fitIndices[, 3]) * sft$fitIndices[, 2],
+     labels = powers, col = "red")
+abline(h = 0.9, col = "red")
+plot(sft$fitIndices[, 1], sft$fitIndices[, 5], type = "n", xlab = "Soft Threshold (power)",
+     ylab = "Mean Connectivity", main = paste("Mean connectivity"))
+text(sft$fitIndices[, 1], sft$fitIndices[, 5], labels = powers, col = "red")
+```
+```{r}
+net = blockwiseModules(D31.correspond, power = sft$powerEstimate, maxBlockSize = ncol(D31.correspond),
+                       TOMType = "unsigned", minModuleSize = 30,
+                       reassignThreshold = 0, mergeCutHeight = 0.25,
+                       numericLabels = TRUE, pamRespectsDendro = FALSE,
+                       corType = "pearson", 
+                       verbose = 3)
+
+```
+```{r}
+moduleLabels = net$colors
+moduleColors = labels2colors(moduleLabels)
+MEs = net$MEs
+MEs = MEs[,order(colnames(MEs),decreasing = F)]
+
+hub = list()
+for (i in 1:(ncol(MEs) )){
+  Temp = D31.correspond[,net$colors == (i-1)]
+  R.temp = cor(Temp,MEs[,i])
+  R.temp1 = data.frame(name = rownames(R.temp)[order(abs(R.temp),decreasing = T)],value = R.temp[order(abs(R.temp),decreasing = T)])
+  hub[[i]] = R.temp1
+}
+
+```
+
+```{r}
+hub.re = data.frame(group = 0,name = 0,coef = 0, rank.coef = 0)
+for (i in 1:length(hub)){
+  temp = data.frame(group = (i - 1),name = hub[[i]]$name, coef = hub[[i]]$value, rank.coef = seq(1,to = nrow(hub[[i]])))
+  hub.re = rbind(hub.re,temp)
+}
+hub.re = hub.re[-1,]
+hub.re$p_value1 = p_value1[hub.re$name]
+hub.re$p_value2 = p_value2[hub.re$name]
+hub.re$p_value3 = p_value3[hub.re$name]
+```
+
+```{r}
+Visual_contour(x = D11.corrspond$`F eaten`,y = D11.corrspond$`Cellulose intake`,z = D31.correspond$Slc27a2)  + scale_fill_gradientn(colours = jet.colors(256))
+```
+
+```{r}
+MEs.lc = list()
+
+for(i in 1:ncol(MEs)){
+  MEs.lc[[i]] = lc_exhaust(D = scale(D11.corrspond[,-c(12,1:5)]),Z = scale(MEs[,i]),k = 2,type = 1)
+}
+```
+
+```{r}
+hub = chooseTopHubInEachModule(D31.correspond,colorh = labels2colors(net$colors),omitColors = "grey",power = sft$powerEstimate)
+```
+
+```{r}
+q = 5000
+baseline = bl(n = nrow(D31.correspond),k = 2,q = q)
+hub1 = matrix(0,ncol = 20,nrow = nrow(hub.re))
+for (i in 1:nrow(hub.re)){
+  temp = lc_exhaust(D = scale(D11.corrspond[,-c(1:5,12,10)]),Z = scale(D31.correspond[,hub.re$name[i]]),k = 2,type = 1)
+  for(j in 1:10){
+    hub1[i,(2*j - 1)] = paste(temp$searchspace[1,j],temp$searchspace[2,j],sep = ",")
+    hub1[i,2*j] = sum(baseline<temp$lc[j])/q
+  }
+}
+```
+
+
+```{r}
+q = 5000
+baseline = bl(n = nrow(D31),k = 2,q = q)
+hub2 = matrix(0,ncol = 20,nrow = ncol(D31))
+for (i in 1:ncol(D31)){
+  temp = lc_exhaust(D = scale(D11.corrspond[,-c(1:5,12,10)]),Z = scale(D31[,i]),k = 2,type = 1)
+  for(j in 1:10){
+    hub2[i,(2*j - 1)] = paste(temp$searchspace[1,j],temp$searchspace[2,j],sep = ",")
+    hub2[i,2*j] = sum(baseline<temp$lc[j])/q
+  }
+}
+```
+
+```{r}
+plotMat(scale(D11) ,
+        nrgcols=30,rlabels=F
+        )
+```
+
