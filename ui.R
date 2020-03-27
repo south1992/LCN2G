@@ -5,7 +5,7 @@ library(visNetwork)
 library(DT)
 source("utils.R")
 
-navbarPage("Geometry of Nutrition Framework",
+navbarPage("LC-N2G",
            shinyjs::useShinyjs(),
            theme = shinytheme("cerulean"),
            tabPanel("Data Preprocess",

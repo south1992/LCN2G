@@ -92,31 +92,15 @@ lc = function(D,M,Z,lmd = NULL){
     lmd = adp_weight
   }
   
-  D_z  = matrix(0,ncol = nrow(Z),nrow = nrow(Z))
-  for (k in 1:ncol(Z)){
-    d_z  = matrix(0,ncol = nrow(Z),nrow = nrow(Z))
-    for (i in 1:nrow(Z)){
-      for (j in 1:nrow(Z)){
-        d_z[i,j] = Z[i] - Z[j]
-      }
-    }
-    D_z =D_z + lmd[k]*abs(d_z)
-  }
+#  print(Z)
+  D_z  = abs(outer(Z[,1],Z[,1],"-"))
+
   
+  D_M = exp(as.matrix(-dist(D %*% M)^2))
+ # print(D_M)
+ # print(D_z)
   
-  D_M = matrix(0,nrow = nrow(D),ncol = nrow(D))
-  
-  for (i in 1:(nrow(D) - 1))
-  {
-    D_M[i,i] = 0
-    for(j in (i + 1):nrow(D)){
-      q = as.matrix(D[i,] - D[j,])
-      D_M[i,j] = exp(-t(q) %*% M %*% q)
-      D_M[j,i] = D_M[i,j]
-    }
-  }
-  
-  R = tr(D_M%*%abs(D_z))
+  R = sum(D_M * abs(D_z))
   return(R)
 }
 
@@ -192,6 +176,8 @@ lc_exhaust <- function(D,Z,k,type = 2,isorder = T){
     return(out)
     }
 }
+
+
 
 
 bl <- function(n,k,q = 1000){

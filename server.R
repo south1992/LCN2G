@@ -1,24 +1,24 @@
 options(jave.parameters = "-Xmx1024m")
-library(shiny)
-library(shinyjs)
-library(limma)
-library(WGCNA)
-library(dynamicTreeCut)
-library(reshape2)
-library(ggplot2)
-library(plotly)
-library(fields)
-library(visNetwork)
-library(grid)
-library(rJava)
-library(tidyverse)
-library(DESeq2)
-library(edgeR)
-library(DT)
-library(directlabels)
-library(psych)
-library(GA)
-library(mclust)
+pkgs<- c("shiny","shinyjs","shinythemes","limma","WGCNA","dynamicTreeCut","reshape2",
+         "ggplot2","plotly","fields","visNetwork","grid","rJava","tidyverse",
+         "DT","directlabels","psych","GA","mclust")
+pkg_type <- c("C","C","C","B","B","C","C","C","C","C","C","C","C","C","C","C","C","C","C")
+
+#if(!require("BiocManager")) install.packages("BiocManager",update = F,ask = F)
+for (i in 1:length(pkgs)){
+    pkg <- pkgs[i]
+    test <- require(pkg,character.only = T)
+    print(test)
+    if(!test){
+        if(pkg_type[i] == "C"){
+            install.packages(pkg,ask = F,update = F)
+            require(pkg,character.only = T)
+        }else{
+            BiocManager::install(pkg,ask = F,update = F)
+            library(pkg,character.only = T)
+        }
+    }
+}
 source("utils.R")
 source("preprocessing.R")
 source("Cluster.R")
