@@ -38,7 +38,7 @@ This shiny app is composed in 3 parts, Data Preprocessing, Gene Clustering and V
 
 This part works for preprocess the gene and nutrition data. 
  
-![LC-Vis](/img/git_fig2.png)
+![Preprocessing](/img/git_fig2.png)
 	
 We have implemented different kind of preprocess method in this part. One can upload its own dataset(in csv format and each row for a sample) or use the default dataset which upload nothing and click Analysis(GSE85998). Different threshold for filtering is provided and the resulting plot will appear in the right panel after click analysis.
 In the default dataset, we alreadly normalised using Cyclophilin as the endogenous control, so just use "None" as normalization method.
@@ -47,7 +47,7 @@ In the default dataset, we alreadly normalised using Cyclophilin as the endogeno
 
 In order to get representitive gene for next step visualization, we provided a gene cluster method. If some special gene expression are interested, one can go to next step.
 
-![LC-Vis](/img/git_fig3.png)	
+![Clustering](/img/git_fig3.png)	
 	
 The clustering method we used here are hierachical clustering and the choices of distance matrix varies. The first panel provided a clustering method for gene-gene relationship and the distance matrix can based on gene expression or gene-gene correlation. Also the gene-nutrition relationship can use to clustering either based on covariance or correlation matrix. A hybrid parameter was used to combine this two matrix.
 
@@ -59,7 +59,7 @@ The output panel will visualize the dendrogram for clustering and the correspond
 
 Finally, the nutrition geometry framework(NGF) is done in this part.
 	
-![LC-Vis](/img/git_fig4.png)
+![NGF](/img/git_fig4.png)
 	
 The first parameter here are used for choose gene or cluster of gene. If a gene is used, the result will be NGF of the gene or if a cluster choosed, NGFs of mean, variance, eigen-gene and a presentitive gene will visualize.
 
