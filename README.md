@@ -14,9 +14,9 @@ To use this shiny app you can either:
  - visit our webpage http://shiny.maths.usyd.edu.au/LC-N2G/
  - install this shiny app
 	``` r
-		remotes::install_github("SydneyBioX/LCN2G")
-		library(LCN2G)
-		run_App()
+	remotes::install_github("SydneyBioX/LCN2G")
+	library(LCN2G)
+	run_App()
 	```
 ## Packages Requirements
 
