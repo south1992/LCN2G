@@ -71,11 +71,5 @@ For LC-Test of the relationship between selected gene/cluster, the candidate nut
 
 The final parameter are used to visualize the NGF with selected xaxis and yaxis. Output panel will show the resulting NGF.
 
-## Meta
-
-Xiangnan Xu – xiangnanxu@sydney.edu.au
-
-Distributed under the MIT License.. See ``LICENSE`` for more information.
-
-[https://github.com/SydneyBioX/LC-Vis/](https://github.com/SydneyBioX/LC-Vis/)
-
+## Contact us
+If you have any enquiries, especially about performing LC-N2G on your own data, then please contact xiangnan.xu@sydney.edu.au You can also open an issue on GitHub.
