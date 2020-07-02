@@ -10,8 +10,9 @@ Figure 1 Overall workflow of LC-N2G. Gn×p2 and Nn×p1 represent input of matrix
 </div>
 
 ## Get Started
+To use this shiny app you can either:
  - visit our webpage http://shiny.maths.usyd.edu.au/LC-N2G/
- -
+ - install this shiny app by
 	
 ## Packages Requirements
 
