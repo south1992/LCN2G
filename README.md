@@ -13,9 +13,11 @@ Figure 1 Overall workflow of LC-N2G. Gn×p2 and Nn×p1 represent input of matrix
 To use this shiny app you can either:
  - visit our webpage http://shiny.maths.usyd.edu.au/LC-N2G/
  - install this shiny app
-	remotes::install_github("SydneyBioX/LCN2G")
-	library(LCN2G)
-	run_App()
+	``` r
+		remotes::install_github("SydneyBioX/LCN2G")
+		library(LCN2G)
+		run_App()
+	```
 ## Packages Requirements
 
 - shiny ≥ 1.4.0.2
