@@ -1,6 +1,6 @@
 #' @title shiny app LC-N2G
 #' @export
-runLCN2G <- function() {
+li <- function() {
   appDir <- system.file("LC-N2G", package = "LCN2G")
   if (appDir == "") {
     stop("Could not find example directory. Try re-installing `mypackage`.", call. = FALSE)

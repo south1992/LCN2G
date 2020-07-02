@@ -14,5 +14,5 @@ Imports:
 Suggests: knitr
 RoxygenNote: 7.1.1
 NeedsCompilation: no
-Packaged: 2020-07-02 18:04:19 UTC; Lenovo
+Packaged: 2020-07-02 18:17:11 UTC; Lenovo
 Depends: R (>= 3.5.0)

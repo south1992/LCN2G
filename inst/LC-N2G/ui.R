@@ -1,10 +1,10 @@
 #options(jave.parameters = "-Xmx1024m")
-#pkgs<- c("shiny","shinyjs","shinythemes","WGCNA","dynamicTreeCut","reshape2",
-#         "ggplot2","plotly","fields","visNetwork","grid","tidyverse",
-#         "DT","directlabels","psych","GA","mclust")
-#pkg_type <- c("C","C","C","B","C","C","C","C","C","C","C","C","C","C","C","C","C")
+pkgs<- c("shiny","shinyjs","shinythemes","WGCNA","dynamicTreeCut","reshape2",
+         "ggplot2","plotly","fields","visNetwork","grid","tidyverse",
+         "DT","directlabels","psych","GA","mclust")
+pkg_type <- c("C","C","C","B","C","C","C","C","C","C","C","C","C","C","C","C","C")
 
-#if(!require("BiocManager")) install.packages("BiocManager",update = F,ask = F)
+if(!require("BiocManager")) install.packages("BiocManager",update = F,ask = F)
 for (i in 1:length(pkgs)){
     pkg <- pkgs[i]
     test <- require(pkg,character.only = T)
