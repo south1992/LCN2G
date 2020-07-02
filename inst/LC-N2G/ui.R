@@ -1,26 +1,26 @@
 #options(jave.parameters = "-Xmx1024m")
-pkgs<- c("shiny","shinyjs","shinythemes","WGCNA","dynamicTreeCut","reshape2",
-         "ggplot2","plotly","fields","visNetwork","grid","tidyverse",
-         "DT","directlabels","psych","GA","mclust")
-pkg_type <- c("C","C","C","B","C","C","C","C","C","C","C","C","C","C","C","C","C")
+#pkgs<- c("shiny","shinyjs","shinythemes","WGCNA","dynamicTreeCut","reshape2",
+#         "ggplot2","plotly","fields","visNetwork","grid","tidyverse",
+#         "DT","directlabels","psych","GA","mclust")
+#pkg_type <- c("C","C","C","B","C","C","C","C","C","C","C","C","C","C","C","C","C")
 
-if(!require("BiocManager")) install.packages("BiocManager",update = F,ask = F)
-for (i in 1:length(pkgs)){
-    pkg <- pkgs[i]
-    test <- require(pkg,character.only = T)
-    if(!test){
-        if(pkg_type[i] == "C"){
-            install.packages(pkg,ask = F,update = F)
-            require(pkg,character.only = T)
-        }else{
-            BiocManager::install(pkg,ask = F,update = F)
-            library(pkg,character.only = T)
-        }
-    }
-}
+#if(!require("BiocManager")) install.packages("BiocManager",update = F,ask = F)
+#for (i in 1:length(pkgs)){
+#    pkg <- pkgs[i]
+#    test <- require(pkg,character.only = T)
+#    if(!test){
+#        if(pkg_type[i] == "C"){
+#            install.packages(pkg,ask = F,update = F)
+#            require(pkg,character.only = T)
+#        }else{
+#            BiocManager::install(pkg,ask = F,update = F)
+#            library(pkg,character.only = T)
+#        }
+#    }
+#}
 source("utils.R")
 getwd()
-shinyUI(fluidPage(theme = shinytheme("cerulean"),
+shinyUI(fluidPage(theme = shinythemes::shinytheme("cerulean"),
                   shinyjs::useShinyjs(),
         navbarPage("LC-N2G",
                    id = "LCN2G",
@@ -84,7 +84,7 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
                                   id = "Clust_output",
                                   tabPanel("Dendro",plotOutput("denro"),DT::dataTableOutput("clusttab")),
                                   tabPanel("Table",DT::dataTableOutput("exprtab")),
-                                  tabPanel("Summary",visNetworkOutput("vnet",height = "700px"))
+                                  tabPanel("Summary",visNetwork::visNetworkOutput("vnet",height = "700px"))
                                 )
                                 )
                             )),
