@@ -1,13 +1,17 @@
 # LC-N2G: A Local Consistency Approach for Nutrigenomics Data Analysis
+> shiny app LC-N2G to explore the relationship between nutrition and its corresponding gene expression data.
 
-
-It's a shiny app(LC-N2G) to explore the relationship of nutrition and its corresponding gene expression data. The default dataset come from mouse nutrition study(GSE85998). The overall workflow of LC-N2G works as follows:
+It's a shiny app(LC-N2G) to explore the relationship between nutrition and its corresponding gene expression data. The default dataset come from mouse nutrition study(GSE85998). The overall workflow of LC-N2G works as follows:
 	
 ![LC-Vis](/img/fig1.png)
 	
 <div align=center>
 Figure 1 Overall workflow of LC-N2G. Gn×p2 and Nn×p1 represent input of matrix of gene and nutrition respectively. First step we calculate LC-Stat of combinations with a gene of interest to find combination of nutrients with small LC-Stat. Then a LC-Test is performed to evaluate the relationship between combination of nutrients with gene. Finally the NGF is performed for selected combination and genes.
 </div>
+
+## Get Started
+ - visit our webpage http://shiny.maths.usyd.edu.au/LC-N2G/
+ -
 	
 ## Packages Requirements
 
@@ -66,3 +70,12 @@ The first parameter here are used for choose gene or cluster of gene. If a gene 
 For LC-Test of the relationship between selected gene/cluster, the candidate nutrition variables can be choosed in the second panel. Click analysis in this panel, the combination with smallest LC-Statistic will show in the output panel.
 
 The final parameter are used to visualize the NGF with selected xaxis and yaxis. Output panel will show the resulting NGF.
+
+## Meta
+
+Xiangnan Xu – xiangnanxu@sydney.edu.au
+
+Distributed under the MIT License.. See ``LICENSE`` for more information.
+
+[https://github.com/SydneyBioX/LC-Vis/](https://github.com/SydneyBioX/LC-Vis/)
+
