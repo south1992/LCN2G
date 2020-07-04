@@ -1,12 +1,12 @@
 # LC-N2G: A Local Consistency Approach for Nutrigenomics Data Analysis
 > This shiny app LC-N2G explores the relationship between nutrition and its corresponding gene expression data.
 
-Shiny app(LC-N2G) explores the relationship between nutrition and its corresponding gene expression data. The default dataset comes from the mouse nutrition study(GSE85998). The overall workflow of LC-N2G is as follows and for a full description, we refer to [1].
+Shiny app(LC-N2G) explores the relationship between nutrition and its corresponding gene expression data. The default dataset comes from the mouse nutrition study(GSE85998). The overall workflow of LC-N2G is as follows and for a full description, we refer to our paper.
 	
 ![LC-Vis](/img/fig1.png)
 	
 <div align=center>
-Figure 1 Overall workflow of LC-N2G. Gn×p2 and Nn×p1 represent the input matrix of gene and nutrition information respectively. In the first step we calculate Local consistency statistics(LC-Stat) of combinations with a gene of interest and find combinations of nutrients with small LC-Stat. Then a LC-Test is performed to evaluate the relationship between combination of nutrients with gene. Finally the Nutrition geometry framework(NGF)[2] is performed for selected combination and genes.
+Figure 1 Overall workflow of LC-N2G. Gn×p2 and Nn×p1 represent the input matrix of gene and nutrition information respectively. In the first step we calculate Local consistency statistics(LC-Stat) of combinations with a gene of interest and find combinations of nutrients with small LC-Stat. Then a LC-Test is performed to evaluate the relationship between combination of nutrients with gene. Finally the Nutrition geometry framework(NGF)[1] is performed for selected combination and genes.
 </div>
 
 ## Get Started
@@ -67,7 +67,7 @@ The output panel will visualize the dendrogram for clustering and the correspond
 	
 ### Gene Nutrition Visualization
 
-Finally, the nutrition geometry framework (NGF)[2] is done in this part.
+Finally, the nutrition geometry framework (NGF)[1] is done in this part.
 	
 ![NGF](/img/fig4.png)
 	
@@ -76,6 +76,9 @@ The first parameter here are used for the chosen gene ("gene name") or cluster o
 For LC-Test of the relationship between selected gene/cluster, the candidate nutrition variables can be chosen in the second panel. Click analysis in this panel, the combination with smallest LC-Statistic will show in the output panel.
 
 The final parameter are used to visualize the NGF with selected x-axis and y-axis. Output panel will show the resulting NGF.
+
+## Reference
+
 
 ## Contact us
 If you have any enquiries, especially about performing LC-N2G on your own data, then please contact xiangnan.xu@sydney.edu.au You can also open an issue on GitHub.
