@@ -1,17 +1,17 @@
 # LC-N2G: A Local Consistency Approach for Nutrigenomics Data Analysis
-> shiny app LC-N2G to explore the relationship between nutrition and its corresponding gene expression data.
+> This shiny app LC-N2G explores the relationship between nutrition and its corresponding gene expression data.
 
-It's a shiny app(LC-N2G) to explore the relationship between nutrition and its corresponding gene expression data. The default dataset come from mouse nutrition study(GSE85998). The overall workflow of LC-N2G works as follows:
+Shiny app(LC-N2G) explores the relationship between nutrition and its corresponding gene expression data. The default dataset comes from the mouse nutrition study(GSE85998). The overall workflow of LC-N2G is as follows and for a full description, we refer to [1].
 	
 ![LC-Vis](/img/fig1.png)
 	
 <div align=center>
-Figure 1 Overall workflow of LC-N2G. Gn×p2 and Nn×p1 represent input of matrix of gene and nutrition respectively. First step we calculate LC-Stat of combinations with a gene of interest to find combination of nutrients with small LC-Stat. Then a LC-Test is performed to evaluate the relationship between combination of nutrients with gene. Finally the NGF is performed for selected combination and genes.
+Figure 1 Overall workflow of LC-N2G. Gn×p2 and Nn×p1 represent the input matrix of gene and nutrition information respectively. In the first step we calculate Local consistency statistics(LC-Stat) of combinations with a gene of interest and find combinations of nutrients with small LC-Stat. Then a LC-Test is performed to evaluate the relationship between combination of nutrients with gene. Finally the Nutrition geometry framework(NGF)[2] is performed for selected combination and genes.
 </div>
 
 ## Get Started
 To use this shiny app you can either:
- - visit our webpage http://shiny.maths.usyd.edu.au/LC-N2G/
+ - visit our webpage http://shiny.maths.usyd.edu.au/LC-N2G/ , or
  - install this shiny app
 	``` r
 	remotes::install_github("SydneyBioX/LCN2G")
@@ -41,24 +41,25 @@ To use this shiny app you can either:
  
 ## Usage	
 
-This shiny app is composed in 3 parts, Data Preprocessing, Gene Clustering and Visualization. We introduce each part as follows.
+This shiny app has three parts: Data Preprocessing, Gene Clustering and Visualization. We introduce each part as follows.
 
 ### Data Preprocessing
 
-This part works for preprocess the gene and nutrition data. 
+This part preprocesses the gene and nutrition data. 
  
 ![Preprocessing](/img/fig2.png)
 	
-We have implemented different kind of preprocess method in this part. One can upload its own dataset(in csv format and each row for a sample) or use the default dataset which upload nothing and click Analysis(GSE85998). Different threshold for filtering is provided and the resulting plot will appear in the right panel after click analysis.
-In the default dataset, we alreadly normalised using Cyclophilin as the endogenous control, so just use "None" as normalization method.
+We have implemented different preprocessing methods. One can upload its own dataset(in csv format each row represents a sample) or use the default dataset (no upload needed) by clicking Analysis (GSE85998). Different threshold for filtering is provided and the resulting plot will appear in the right panel after clicking on analysis.
+
+In the default dataset, we already normalised using Cyclophilin as the endogenous control, so just use "None" as normalization method.
 
 ### Gene Clustering
 
-In order to get representitive gene for next step visualization, we provided a gene cluster method. If some special gene expression are interested, one can go to next step.
+In order to get representitive genes for the second visualization step, we provide a gene cluster method. If some special gene expressions are interested, this step can be skipped.
 
 ![Clustering](/img/fig3.png)	
 	
-The clustering method we used here are hierachical clustering and the choices of distance matrix varies. The first panel provided a clustering method for gene-gene relationship and the distance matrix can based on gene expression or gene-gene correlation. Also the gene-nutrition relationship can use to clustering either based on covariance or correlation matrix. A hybrid parameter was used to combine this two matrix.
+The clustering method we use here is hierachical clustering; the choice of the distance matrix can be varied. The first panel provides a clustering method for gene-gene relationships and the distance matrix can be based on gene expression or on gene-gene correlation. Also the gene-nutrition relationship can be used to clustering either based on the covariance or the correlation matrix. A hybrid parameter is used to combine the matrix.
 
 If we only use one, we can set this parameter either be 0 or 1. The cuttree method also can be choosed.
 
@@ -66,15 +67,15 @@ The output panel will visualize the dendrogram for clustering and the correspond
 	
 ### Gene Nutrition Visualization
 
-Finally, the nutrition geometry framework(NGF) is done in this part.
+Finally, the nutrition geometry framework (NGF)[2] is done in this part.
 	
 ![NGF](/img/fig4.png)
 	
-The first parameter here are used for choose gene or cluster of gene. If a gene is used, the result will be NGF of the gene or if a cluster choosed, NGFs of mean, variance, eigen-gene and a presentitive gene will visualize.
+The first parameter here are used for the chosen gene ("gene name") or cluster of genes ("cluster"). If "gene name" is chosen, the result will be NGF of the gene input in "z-axis(gene):". If "cluster" is chosen, NGFs of four representitive features (mean, variance, eigen-gene and a presentitive gene) of the cluster selected in "z-axis(cluster):".
 
-For LC-Test of the relationship between selected gene/cluster, the candidate nutrition variables can be choosed in the second panel. Click analysis in this panel, the combination with smallest LC-Statistic will show in the output panel.
+For LC-Test of the relationship between selected gene/cluster, the candidate nutrition variables can be chosen in the second panel. Click analysis in this panel, the combination with smallest LC-Statistic will show in the output panel.
 
-The final parameter are used to visualize the NGF with selected xaxis and yaxis. Output panel will show the resulting NGF.
+The final parameter are used to visualize the NGF with selected x-axis and y-axis. Output panel will show the resulting NGF.
 
 ## Contact us
 If you have any enquiries, especially about performing LC-N2G on your own data, then please contact xiangnan.xu@sydney.edu.au You can also open an issue on GitHub.
