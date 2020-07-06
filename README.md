@@ -1,7 +1,7 @@
 # LC-N2G: A Local Consistency Approach for Nutrigenomics Data Analysis
 > This shiny app LC-N2G explores the relationship between nutrition and its corresponding gene expression data.
 
-Shiny app(LC-N2G) explores the relationship between nutrition and its corresponding gene expression data. The default dataset comes from the mouse nutrition study (GSE85998)[1]. The overall workflow of LC-N2G is as follows and for a full description, we refer to our paper.
+Shiny app(LC-N2G) explores the relationship between nutrition and its corresponding gene expression data. The default dataset comes from the mouse nutrition study (GSE85998)[1]. The overall workflow of LC-N2G is as follows and for a full description, we refer to [our paper]<h2 id="id1" style="display:none;"> </h2>.
 	
 ![LC-Vis](/img/fig1.png)
 	
@@ -77,7 +77,7 @@ For LC-Test of the relationship between selected gene/cluster, the candidate nut
 
 The final parameter are used to visualize the NGF with selected x-axis and y-axis. Output panel will show the resulting NGF.
 
-## Our paper
+[## Our paper] (#id1)
 
 LC-N2G: A Local Consistency Approach for Nutrigenomics Data Analysis
 
