@@ -79,7 +79,7 @@ The final parameters are used to visualize the NGF with selected x-axis and y-ax
 
 ## Our paper
 
-Xu, X.N., Solon-Biet, S.M.: LC-N2G: A Local Consistency Approach for Nutrigenomics Data Analysis. (Submitted to BMC Bioinformatics) 
+Xu, X.N., Solon-Biet, S.M. et al: LC-N2G: A Local Consistency Approach for Nutrigenomics Data Analysis. (Submitted to BMC Bioinformatics) 
 
 ## Reference
 
