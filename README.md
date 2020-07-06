@@ -89,4 +89,4 @@ Xu, X.N., Solon-Biet, S.M.: LC-N2G: A Local Consistency Approach for Nutrigenomi
 
 
 ## Contact us
-If you have any enquiries, especially about performing LC-N2G on your own data, then please contact xiangnan.xu@sydney.edu.au You can also open an issue on GitHub.
+If you have any enquiries, especially about performing LC-N2G on your own data, then please contact xiangnan.xu@sydney.edu.au. You can also raise an issue on GitHub (https://github.com/SydneyBioX/LCN2G/).
