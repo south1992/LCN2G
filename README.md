@@ -40,10 +40,15 @@ To use this shiny app you can either:
 	```
 ## Vignette
 
-You can find the vignette at our website: https://sydneybiox.github.io/CiteFuse/articles/CiteFuse.html.
+You can find the vignette at our website: https://sydneybiox.github.io/LCN2G/.
 
 
-## CiteFuse overview
+## Our paper
 
+Xu, X.N., Solon-Biet, S.M. et al: LC-N2G: A Local Consistency Approach for Nutrigenomics Data Analysis. (Submitted to BMC Bioinformatics) 
 
-![LCN2G](./img/fig1.png)
+## Reference
+
+[1] Solon-Biet, S.M., Cogger, V.C. et al: Defining the nutritional and metabolic context of fgf21 using the geometric framework. Cell Metabolism 24, 555–565 (2016)
+
+[2] Raubenheimer, D., Simpson, S.J.: Nutritional ecology and human health. Annual Review of Nutrition 36, 603–626 (2016)
