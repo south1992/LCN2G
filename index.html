@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>LCN2G by SydneyBioX</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">LCN2G</h1>
+      <h2 class="project-tagline">A Local Consistency Approach for Nutrigenomics Data Analysis</h2>
+      <a href="https://github.com/SydneyBioX/LCN2G" class="btn">View on GitHub</a>
+      <a href="https://github.com/SydneyBioX/LCN2G/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/SydneyBioX/LCN2G/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <blockquote>
+<p>This shiny app LC-N2G explores the relationship between nutrition and its corresponding gene expression data.</p>
+</blockquote>
+<p>Shiny app(LC-N2G) explores the relationship between nutrition and its corresponding gene expression data. The default dataset comes from the mouse nutrition study (GSE85998)[1]. The overall workflow of LC-N2G is as follows and for a full description, we refer to <a href="Our-paper">our paper</a>.</p>
+<p><img src="/img/fig1.png" alt=""></p>
+<div align="center">
+Figure 1 Overall workflow of LC-N2G. Matrix G anf N represent the input matrix of gene and nutrition information, respectively. In the first step we calculate the Local consistency statistics (LC-Stat) of combinations with a gene of interest and find combinations of nutrients with small LC-Stat. Then the LC-Test is performed to evaluate the relationship between combination of nutrients with gene. Finally the Nutrition Geometry Framework(NGF)[2] is performed for the selected combination and genes.
+</div>
+<h2>
+<a id="get-started" class="anchor" href="#get-started" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Get Started</h2>
+<p>To use this shiny app you can either:</p>
+<ul>
+<li>
+<p>visit our webpage <a href="http://shiny.maths.usyd.edu.au/LC-N2G/">http://shiny.maths.usyd.edu.au/LC-N2G/</a> , or</p>
+</li>
+<li>
+<p>install it through</p>
+<div class="highlight highlight-source-r"><pre><span class="pl-e">remotes</span><span class="pl-k">::</span>install_github(<span class="pl-s"><span class="pl-pds">"</span>SydneyBioX/LCN2G<span class="pl-pds">"</span></span>)
+library(<span class="pl-smi">LCN2G</span>)
+run_App()</pre></div>
+</li>
+</ul>
+<h2>
+<a id="packages-requirements" class="anchor" href="#packages-requirements" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Packages Requirements</h2>
+<ul>
+<li>shiny ≥ 1.4.0.2</li>
+<li>shinythemes ≥ 1.1.2</li>
+<li>shinyjs ≥ 1.1</li>
+<li>DT ≥ 0.13</li>
+<li>directlabels ≥ 2020.1.31</li>
+<li>mclust ≥ 5.4.5</li>
+<li>GA ≥ 3.2</li>
+<li>WGCNA ≥ 1.69</li>
+<li>tidyverse ≥ 1.3.0</li>
+<li>plotly ≥ 4.9.2</li>
+<li>visNetwork ≥ 2.0.9</li>
+<li>limma ≥ 3.42.2</li>
+<li>dynamicTreeCut ≥ 1.63-1</li>
+<li>psych ≥ 1.9.12.31</li>
+<li>fields ≥ 10.3</li>
+<li>plotly ≥ 4.9.2</li>
+<li>reshape2 ≥ 1.4.3</li>
+</ul>
+<h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h2>
+<p>This shiny app has three parts: Data Preprocessing, Gene Clustering and Visualization. We introduce each part as follows.</p>
+<h3>
+<a id="data-preprocessing" class="anchor" href="#data-preprocessing" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Data Preprocessing</h3>
+<p>This part preprocesses the gene and nutrition data.</p>
+<p><img src="/img/fig2.png" alt=""></p>
+<p>We have implemented different preprocessing methods. One can upload its own dataset (in csv format, each row represents a sample) or use the default dataset (no upload needed) by clicking Analysis (GSE85998). Different threshold for filtering is provided and the resulting plot will appear in the right panel after clicking on analysis.</p>
+<p>In the default dataset, we already normalised using Cyclophilin as the endogenous control, so just use "None" as the normalization method.</p>
+<h3>
+<a id="gene-clustering" class="anchor" href="#gene-clustering" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Gene Clustering</h3>
+<p>In order to get representitive genes for the second visualization step, we provide a gene cluster method. If some special gene expressions are of interest, this step can be skipped.</p>
+<p><img src="/img/fig3.png" alt=""></p>
+<p>The clustering method we use here is hierachical clustering; the choice of the distance matrix can be varied. The first panel provides a clustering method for gene-gene relationships and the distance matrix can be based on gene expression or on gene-gene correlation. Also the gene-nutrition relationship can be used to cluster either based on the covariance or the correlation matrix. A hybrid parameter is used to combine the matrices.</p>
+<p>To use a single matrix, set this parameter to either 0 or 1. Cuttree is an alternative method.</p>
+<p>The output panel visualizes the dendrogram for clustering and the corresponding result is shown in the tabel tab-panel. A network of nutrition, clusters and its corresponding eigen-gene is presented in summary tab-panel.</p>
+<h3>
+<a id="gene-nutrition-visualization" class="anchor" href="#gene-nutrition-visualization" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Gene Nutrition Visualization</h3>
+<p>Finally, the Nutrition Geometry Framework (NGF) [2] is done in this part.</p>
+<p><img src="/img/fig4.png" alt=""></p>
+<p>The first parameter here is used for the chosen gene ("gene name") or cluster of genes ("cluster"). If "gene name" is chosen, the result is the NGF of the gene input in "z-axis(gene):". If "cluster" is chosen, the NGFs of four representitive features (mean, variance, eigen-gene and a presentitive gene) of the cluster selected in "z-axis(cluster):" is shown.</p>
+<p>For the LC-Test of the relationship between selected gene/cluster, the candidate nutrition variables can be chosen in the second panel. Click analysis in this panel, the combination with smallest LC-Statistic will show in the output panel.</p>
+<p>The final parameters are used to visualize the NGF with selected x-axis and y-axis. Output panel will show the resulting NGF.</p>
+<h2>
+<a id="our-paper" class="anchor" href="#our-paper" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Our paper</h2>
+<p>Xu, X.N., Solon-Biet, S.M. et al: LC-N2G: A Local Consistency Approach for Nutrigenomics Data Analysis. (Submitted to BMC Bioinformatics)</p>
+<h2>
+<a id="reference" class="anchor" href="#reference" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Reference</h2>
+<p>[1] Solon-Biet, S.M., Cogger, V.C. et al: Defining the nutritional and metabolic context of fgf21 using the geometric framework. Cell Metabolism 24, 555–565 (2016)</p>
+<p>[2] Raubenheimer, D., Simpson, S.J.: Nutritional ecology and human health. Annual Review of Nutrition 36, 603–626 (2016)</p>
+<h2>
+<a id="contact-us" class="anchor" href="#contact-us" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Contact us</h2>
+<p>If you have any enquiries, especially about performing LC-N2G on your own data, then please contact <a href="mailto:xiangnan.xu@sydney.edu.au">xiangnan.xu@sydney.edu.au</a>. You can also raise an issue on <a href="https://github.com/SydneyBioX/LCN2G/">GitHub</a>.</p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/SydneyBioX/LCN2G">LCN2G</a> is maintained by <a href="https://github.com/SydneyBioX">SydneyBioX</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
